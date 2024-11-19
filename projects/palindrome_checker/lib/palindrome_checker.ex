@@ -5,16 +5,26 @@ defmodule PalindromeChecker do
 
   def main(args) do
     input = Enum.join(args, " ")
-    if is_palindrome?(input) do
-      IO.puts("#{input} is a palindrome!")
-    else
-      IO.puts("#{input} is not a palindrome.")
-    end
+    input
+    |> clean_input()
+    |> check_palindrome(input)
+  end
+
+  defp clean_input(string) do
+    string
+    |> String.downcase()
+    |> String.replace(~r/[^a-z0-9]/i, "")
   end
 
 
-  defp is_palindrome?(string) do
-    cleaned = String.downcase(String.replace(string, ~r/[^a-z0-9]/i, ""))
-    cleaned == String.reverse(cleaned)
+  defp check_palindrome(cleaned, original) do
+    message =
+      if cleaned == String.reverse(cleaned) do
+        "#{original} is a palindrome!"
+      else
+        "#{original} is not a palindrome."
+      end
+
+    IO.puts(message)
   end
 end
