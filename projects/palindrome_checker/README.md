@@ -1,6 +1,6 @@
 # PalindromeChecker
 
-**TODO: Add description**
+A tool to check if an input string is a palindrome.
 
 ## Installation
 
@@ -18,4 +18,3 @@ end
 Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
 and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
 be found at <https://hexdocs.pm/palindrome_checker>.
-
