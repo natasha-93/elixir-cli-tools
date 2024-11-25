@@ -12,6 +12,7 @@ A simple Command-Line Interface (CLI) game of Rock, Paper, Scissors.
       - Scissors beats Paper
     - **Error Handling**: Handles invalid inputs gracefully by prompting the user again.
     - **Emojis**: Displays emojis alongside choices for an enhanced user experience.
+    - **Scoring**: Keeps track of scores during a session
 
 ## Example Interaction
 
@@ -26,6 +27,11 @@ A simple Command-Line Interface (CLI) game of Rock, Paper, Scissors.
       Enter your choice (rock, paper, scissors, or exit to quit): exit
       Thanks for playing! Goodbye!
       ```
+
+## Future enhancements
+
+    - Add a "best of X rounds" mode where the game ends after a certain number of rounds.
+    - Store scores in a file for persistent tracking across sessions.
 
 ## Installation
 
