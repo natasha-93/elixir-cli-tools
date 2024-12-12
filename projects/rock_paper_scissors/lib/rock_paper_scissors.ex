@@ -3,10 +3,15 @@ defmodule RockPaperScissors do
   A simple CLI Rock, Paper, Scissors game with emojis and score tracking.
   """
 
+  @type choice_name :: :rock | :paper | :scissors
+  @type choice_tuple :: {choice_name(), String.t()}
+  @type result :: :tie | :user_win | :computer_win
+  @type score :: %{wins: non_neg_integer(), losses: non_neg_integer(), ties: non_neg_integer()}
+
   @choices [
-    {"rock", "🪨"},
-    {"paper", "📄"},
-    {"scissors", "🔪"}
+    {:rock, "🪨"},
+    {:paper, "📄"},
+    {:scissors, "🔪"}
   ]
 
   @spec main() :: :ok
@@ -16,21 +21,18 @@ defmodule RockPaperScissors do
     run_game(initial_score)
   end
 
-  @spec run_game(%{wins: integer(), losses: integer(), ties: integer()}) :: :ok
+  @spec run_game(score()) :: :ok
   defp run_game(score) do
     input =
       case IO.gets("Enter your choice (rock, paper, scissors, or exit to quit): ") do
-        :eof ->
-          "exit"
-
-        {:error, _reason} ->
-          "exit"
-
-        line ->
-          String.trim(line) |> String.downcase()
+        :eof -> "exit"
+        {:error, _reason} -> "exit"
+        line -> String.trim(line) |> String.downcase()
       end
 
-    case handle_input(input, score) do
+    result = handle_input(input, score)
+
+    case result do
       :exit ->
         IO.puts("\nFinal Scores:")
         display_scores(score)
@@ -42,19 +44,18 @@ defmodule RockPaperScissors do
     end
   end
 
-
-  @spec handle_input(String.t(), %{wins: integer(), losses: integer(), ties: integer()}) ::
-          :exit | {:continue, %{wins: integer(), losses: integer(), ties: integer()}}
   defp handle_input("exit", _score), do: :exit
 
+  @spec handle_input(String.t(), score()) :: :exit | {:continue, score()}
   defp handle_input(user_choice, score) do
     if choice_valid?(user_choice) do
+      user_choice_atom = String.to_existing_atom(user_choice)
       computer_choice = Enum.random(get_choice_names())
 
-      IO.puts("\nYou chose: #{user_choice} #{get_emoji(user_choice)}")
+      IO.puts("\nYou chose: #{user_choice_atom} #{get_emoji(user_choice_atom)}")
       IO.puts("Computer chose: #{computer_choice} #{get_emoji(computer_choice)}")
 
-      result = determine_winner(user_choice, computer_choice)
+      result = determine_winner(user_choice_atom, computer_choice)
       updated_score = update_score(result, score)
 
       display_result(result)
@@ -67,8 +68,7 @@ defmodule RockPaperScissors do
     end
   end
 
-  @spec update_score(:tie | :user_win | :computer_win, %{wins: integer(), losses: integer(), ties: integer()}) ::
-          %{wins: integer(), losses: integer(), ties: integer()}
+  @spec update_score(result(), score()) :: score()
   defp update_score(:tie, %{wins: wins, losses: losses, ties: ties}) do
     %{wins: wins, losses: losses, ties: ties + 1}
   end
@@ -81,20 +81,12 @@ defmodule RockPaperScissors do
     %{wins: wins, losses: losses + 1, ties: ties}
   end
 
-  @spec display_result(:tie | :user_win | :computer_win) :: :ok
-  defp display_result(:tie) do
-    IO.puts("It's a tie!")
-  end
+  @spec display_result(result()) :: :ok
+  defp display_result(:tie), do: IO.puts("It's a tie!")
+  defp display_result(:user_win), do: IO.puts("You win!")
+  defp display_result(:computer_win), do: IO.puts("Computer wins!")
 
-  defp display_result(:user_win) do
-    IO.puts("You win!")
-  end
-
-  defp display_result(:computer_win) do
-    IO.puts("Computer wins!")
-  end
-
-  @spec display_scores(%{wins: integer(), losses: integer(), ties: integer()}) :: :ok
+  @spec display_scores(score()) :: :ok
   defp display_scores(%{wins: wins, losses: losses, ties: ties}) do
     IO.puts("""
     Current Scores:
@@ -104,7 +96,7 @@ defmodule RockPaperScissors do
     """)
   end
 
-  @spec determine_winner(String.t(), String.t()) :: :tie | :user_win | :computer_win
+  @spec determine_winner(choice_name(), choice_name()) :: result()
   defp determine_winner(user_choice, computer_choice) do
     user_index = get_choice_index(user_choice)
     computer_index = get_choice_index(computer_choice)
@@ -124,10 +116,10 @@ defmodule RockPaperScissors do
 
   @spec choice_valid?(String.t()) :: boolean()
   defp choice_valid?(choice) do
-    Enum.any?(@choices, fn {key, _} -> key == choice end)
+    Enum.any?(@choices, fn {key, _} -> Atom.to_string(key) == choice end)
   end
 
-  @spec get_emoji(String.t()) :: String.t()
+  @spec get_emoji(choice_name()) :: String.t()
   defp get_emoji(choice) do
     case Enum.find(@choices, fn {key, _} -> key == choice end) do
       {_, emoji} -> emoji
@@ -135,12 +127,12 @@ defmodule RockPaperScissors do
     end
   end
 
-  @spec get_choice_index(String.t()) :: integer() | nil
+  @spec get_choice_index(choice_name()) :: non_neg_integer() | nil
   defp get_choice_index(choice) do
     Enum.find_index(@choices, fn {key, _} -> key == choice end)
   end
 
-  @spec get_choice_names() :: [String.t()]
+  @spec get_choice_names() :: [choice_name()]
   defp get_choice_names do
     Enum.map(@choices, fn {key, _} -> key end)
   end
