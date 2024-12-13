@@ -35,17 +35,17 @@ defmodule RockPaperScissors.GameTest do
   describe "update_score/2" do
     test "updates scores correctly for ties" do
       initial_score = %{wins: 0, losses: 0, ties: 0}
-      assert Game.update_score(:tie, initial_score) == %{wins: 0, losses: 0, ties: 1}
+      assert Game.update_score(:tie, initial_score, false) == %{wins: 0, losses: 0, ties: 1}
     end
 
     test "updates scores correctly for user wins" do
       initial_score = %{wins: 0, losses: 0, ties: 0}
-      assert Game.update_score(:user_win, initial_score) == %{wins: 1, losses: 0, ties: 0}
+      assert Game.update_score(:user_win, initial_score, false) == %{wins: 1, losses: 0, ties: 0}
     end
 
     test "updates scores correctly for computer wins" do
       initial_score = %{wins: 0, losses: 0, ties: 0}
-      assert Game.update_score(:computer_win, initial_score) == %{wins: 0, losses: 1, ties: 0}
+      assert Game.update_score(:computer_win, initial_score, false) == %{wins: 0, losses: 1, ties: 0}
     end
   end
 end

@@ -14,14 +14,17 @@ defmodule RockPaperScissors.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger]
+      extra_applications: [:logger],
+      mod: {RockPaperScissors.Application, []}
     ]
   end
 
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:dialyxir, "~> 1.3", only: [:dev], runtime: false}
+      {:dialyxir, "~> 1.3", only: [:dev], runtime: false},
+      {:ecto_sql, "~> 3.9"},
+      {:ecto_sqlite3, "~> 0.9.0"}
     ]
   end
 end

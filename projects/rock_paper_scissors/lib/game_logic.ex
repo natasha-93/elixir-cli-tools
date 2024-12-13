@@ -3,6 +3,8 @@ defmodule RockPaperScissors.Game do
   Game logic for Rock, Paper, Scissors.
   """
 
+  alias RockPaperScissors.{Repo, Score}
+
   @type choice_name :: :rock | :paper | :scissors
   @type result :: :tie | :user_win | :computer_win
   @type score :: %{wins: non_neg_integer(), losses: non_neg_integer(), ties: non_neg_integer()}
@@ -42,17 +44,41 @@ defmodule RockPaperScissors.Game do
     end
   end
 
-  @spec update_score(result(), score()) :: score()
-  def update_score(:tie, %{wins: wins, losses: losses, ties: ties}) do
-    %{wins: wins, losses: losses, ties: ties + 1}
+  @spec update_score(result(), score(), boolean()) :: score()
+  def update_score(result, current_score, use_db \\ true)
+
+  def update_score(result, current_score, false) do
+    # For test environment, use the provided score
+    case result do
+      :tie -> %{current_score | ties: current_score.ties + 1}
+      :user_win -> %{current_score | wins: current_score.wins + 1}
+      :computer_win -> %{current_score | losses: current_score.losses + 1}
+    end
   end
 
-  def update_score(:user_win, %{wins: wins, losses: losses, ties: ties}) do
-    %{wins: wins + 1, losses: losses, ties: ties}
-  end
+  def update_score(result, _current_score, true) do
+    # For non-test environment, use the database
+    db_score = case Repo.one(Score) do
+      nil -> %Score{}
+      score -> score
+    end
 
-  def update_score(:computer_win, %{wins: wins, losses: losses, ties: ties}) do
-    %{wins: wins, losses: losses + 1, ties: ties}
+    {wins, losses, ties} = case result do
+      :tie -> {db_score.wins, db_score.losses, db_score.ties + 1}
+      :user_win -> {db_score.wins + 1, db_score.losses, db_score.ties}
+      :computer_win -> {db_score.wins, db_score.losses + 1, db_score.ties}
+    end
+
+    updated_score = Ecto.Changeset.change(db_score, %{
+      wins: wins,
+      losses: losses,
+      ties: ties
+    })
+
+    case Repo.insert_or_update(updated_score) do
+      {:ok, score} -> %{wins: score.wins, losses: score.losses, ties: score.ties}
+      {:error, _} -> %{wins: wins, losses: losses, ties: ties}
+    end
   end
 
   @spec get_choice_index(choice_name()) :: non_neg_integer() | nil
